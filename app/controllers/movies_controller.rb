@@ -1,4 +1,6 @@
 class MoviesController < ApplicationController
+  @@necessary_params = [:sort_order, :ratings]
+
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -6,23 +8,39 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = Movie.all_ratings
+    @all_ratings = Movie.all_ratings.keys
+
+    params_were_missing = false
 
     if params.has_key?(:sort_order)
-      @sort_order = params[:sort_order]
+      session[:sort_order] = params[:sort_order]
+      @sort_order = session[:sort_order]
     else
-      @sort_order = :id
+      params_were_missing = true
     end
 
     if params.has_key?(:ratings)
-      @selected_ratings = params[:ratings]
+      session[:ratings] = params[:ratings]
+      @selected_ratings = session[:ratings]
+    else
+      params_were_missing = true
     end
 
-    if @selected_ratings == nil
-      @selected_ratings = Hash.new
+    if not session.has_key?(:ratings)
+      #set default
+      session[:ratings] = Movie.all_ratings
     end
 
-    @movies = Movie.where(:rating => @selected_ratings.keys).order(@sort_order)
+    if not session.has_key?(:sort_order)
+      session[:sort_order] = :id
+    end
+
+    # redirect if parameters were pulled from session
+    if params_were_missing
+      redirect_to :sort_order => session[:sort_order], :ratings => session[:ratings]
+    end
+
+    @movies = Movie.where(:rating => session[:ratings].keys).order(session[:sort_order])
   end
 
   def new
