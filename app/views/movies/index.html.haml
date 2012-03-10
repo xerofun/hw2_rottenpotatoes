@@ -4,9 +4,11 @@
 %table#movies
   %thead
     %tr
-      %th= link_to("Movie Title", {}, :id=>"title_header")
+      %th{:class => (@sort_order.to_sym == :title) ? "hilite" : ""}= link_to("Movie Title",
+          {:controller => :movies, :sort_order => :title},
+          :id => "title_header")
       %th Rating
-      %th= link_to("Release Date", {}, :id=>"release_date_header")
+      %th{:class => (@sort_order.to_sym == :release_date) ? "hilite" : ""}= link_to("Release Date", {:controller => :movies, :sort_order => :release_date}, :id => "release_date_header")
       %th More Info
   %tbody
     - @movies.each do |movie|
